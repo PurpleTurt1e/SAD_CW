@@ -60,6 +60,35 @@ public class ModelFacade
     return result;
   }
 
+  public String findQuote(String date, String dateEnd, String stockTicker)
+  {
+    String result = "";
+    if (DailyQuote_DAO.isCached(date))
+    {
+      result = "Data already exists";
+      return result;
+    }
+    else {
+      {}    }
+    long t1 = 0;
+    t1 = DateComponent.getEpochSeconds(date);
+    long t2 = 0;
+    t2 = DateComponent.getEpochSeconds(dateEnd);
+    String url = "";
+    ArrayList<String> sq1 = null;
+    sq1 = Ocl.copySequence(Ocl.initialiseSequence("period1","period2","interval","events"));
+    ArrayList<String> sq2 = null;
+    sq2 = Ocl.copySequence(Ocl.initialiseSequence((t1 + ""),(t2 + ""),"1d","history"));
+    url = DailyQuote_DAO.getURL(stockTicker, sq1, sq2);
+    InternetAccessor x = null;
+    x = new InternetAccessor();
+    x.setDelegate(this);
+    x.execute(url);
+    result = ("Called url: " + url);
+
+    return result;
+  }
+
   public GraphDisplay analyse()
   { 
     GraphDisplay result = null;
