@@ -1,6 +1,11 @@
 package com.example.app16.ui.main;
 
 import android.content.Context;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +24,6 @@ public class ModelFacade
     return instance;
   }
 
-
   private ModelFacade(Context context)
   { myContext = context; 
     fileSystem = new FileAccessor(context); 
@@ -28,7 +32,6 @@ public class ModelFacade
   public void internetAccessCompleted(String response)
   { 
     DailyQuote_DAO.makeFromCSV(response);
-
   }
 
   public String findQuote(String date)
@@ -36,6 +39,9 @@ public class ModelFacade
     String result = "";
     if (DailyQuote_DAO.isCached(date))
     {
+      ArrayList<String> file = new ArrayList<String>();
+      file = fileSystem.readFile(date);
+      System.out.println(file);
       result = "Data already exists";
     return result;
     }
@@ -55,8 +61,7 @@ public class ModelFacade
     x = new InternetAccessor();
     x.setDelegate(this);
     x.execute(url);
-    result = ("Called url: " + url);
-
+    result = ("Called url: " + result);
     return result;
   }
 
@@ -66,13 +71,27 @@ public class ModelFacade
     result = new GraphDisplay();
     ArrayList<DailyQuote> quotes = null;
     quotes = Ocl.copySequence(DailyQuote.DailyQuote_allInstances);
+    String firstDate = quotes.get(0).date;
+    JSONArray JSONArrayQuotes = DailyQuote_DAO.writeJSONArray(quotes);
+    ArrayList<String> quotesArray = new ArrayList<>();
+    for (int i = 0; i < JSONArrayQuotes.length(); i++){
+      try {
+        quotesArray.add(JSONArrayQuotes.getString(i));
+      } catch (JSONException e) {
+        quotesArray = null;
+      }
+    }
+    if (quotesArray != null) {
+      fileSystem.writeFile(firstDate, quotesArray);
+    }
     ArrayList<String> xnames = null;
     xnames = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.date;}));
     ArrayList<Double> yvalues = null;
     yvalues = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.close;}));
     result.setXNominal(xnames);
     result.setYPoints(yvalues);
-
+//
+//    fileSystem.readFile(firstDate).forEach((q) -> System.out.println(q));
     return result;
   }
 
