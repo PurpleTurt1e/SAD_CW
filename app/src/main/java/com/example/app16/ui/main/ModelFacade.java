@@ -1,6 +1,9 @@
 package com.example.app16.ui.main;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +16,9 @@ import java.util.Map;
 
 public class ModelFacade
   implements InternetCallback
-{ 
+{
+  JSONDataStorage dataStorage;
+  NetworkInfo activeNetwork;
   FileAccessor fileSystem;
   Context myContext;
   static ModelFacade instance = null; 
@@ -29,24 +34,19 @@ public class ModelFacade
     fileSystem = new FileAccessor(context); 
   }
 
-  public void internetAccessCompleted(String response)
-  { 
+  public void internetAccessCompleted(String response) {
     DailyQuote_DAO.makeFromCSV(response);
   }
 
   public String findQuote(String date)
-  { 
+  {
     String result = "";
     if (DailyQuote_DAO.isCached(date))
     {
-      ArrayList<String> file = new ArrayList<String>();
-      file = fileSystem.readFile(date);
-      System.out.println(file);
       result = "Data already exists";
-    return result;
+      return result;
     }
-    else {
-      {}    }
+    else {  }
     long t1 = 0;
     t1 = DateComponent.getEpochSeconds(date);
     long t2 = 0;
@@ -67,51 +67,52 @@ public class ModelFacade
 
   public String findQuote(String date, String dateEnd, String stockTicker)
   {
+    dataStorage = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
+    System.out.println("date End of file will be: " + dataStorage.getDateEnd());
     String result = "";
     if (DailyQuote_DAO.isCached(date))
     {
       result = "Data already exists";
       return result;
     }
-    else {
-      {}    }
+    else { }
     long t1 = 0;
     t1 = DateComponent.getEpochSeconds(date);
     long t2 = 0;
     t2 = DateComponent.getEpochSeconds(dateEnd);
     String url = "";
     ArrayList<String> sq1 = null;
-    sq1 = Ocl.copySequence(Ocl.initialiseSequence("period1","period2","interval","events"));
+    sq1 = Ocl.copySequence(Ocl.initialiseSequence("period1", "period2", "interval", "events"));
     ArrayList<String> sq2 = null;
-    sq2 = Ocl.copySequence(Ocl.initialiseSequence((t1 + ""),(t2 + ""),"1d","history"));
-    url = DailyQuote_DAO.getURL(stockTicker, sq1, sq2);
-    InternetAccessor x = null;
-    x = new InternetAccessor();
-    x.setDelegate(this);
-    x.execute(url);
-    result = ("Called url: " + url);
-
+    sq2 = Ocl.copySequence(Ocl.initialiseSequence((t1 + ""), (t2 + ""), "1d", "history"));
+    ConnectivityManager cm = (ConnectivityManager) myContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+    activeNetwork = cm.getActiveNetworkInfo();
+    if (activeNetwork != null) {
+      url = DailyQuote_DAO.getURL(stockTicker, sq1, sq2);
+      InternetAccessor x = null;
+      x = new InternetAccessor();
+      x.setDelegate(this);
+      x.execute(url);
+      System.out.println("has X cancelled the call to the URL?: " + x.isCancelled());
+      result = "Called url: " + url + "\n Data Storage not yet finalised. Please Press \"Analyse\" button on the next tab. ";
+    }else{
+        if (dataStorage.readFromFile()) {
+          result = "Gathered Data from Offline Resource";
+        }else{
+          result = "You are offline, please connect Online to retrieve data";
+        }
+    }
     return result;
   }
 
   public GraphDisplay analyse()
-  { 
+  {
     GraphDisplay result = null;
     result = new GraphDisplay();
     ArrayList<DailyQuote> quotes = null;
     quotes = Ocl.copySequence(DailyQuote.DailyQuote_allInstances);
-    String firstDate = quotes.get(0).date;
-    JSONArray JSONArrayQuotes = DailyQuote_DAO.writeJSONArray(quotes);
-    ArrayList<String> quotesArray = new ArrayList<>();
-    for (int i = 0; i < JSONArrayQuotes.length(); i++){
-      try {
-        quotesArray.add(JSONArrayQuotes.getString(i));
-      } catch (JSONException e) {
-        quotesArray = null;
-      }
-    }
-    if (quotesArray != null) {
-      fileSystem.writeFile(firstDate, quotesArray);
+    if (activeNetwork != null) {
+      dataStorage.writeIntoFile();
     }
     ArrayList<String> xnames = null;
     xnames = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.date;}));
@@ -119,9 +120,6 @@ public class ModelFacade
     yvalues = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.close;}));
     result.setXNominal(xnames);
     result.setYPoints(yvalues);
-//
-//    fileSystem.readFile(firstDate).forEach((q) -> System.out.println(q));
     return result;
   }
-
 }

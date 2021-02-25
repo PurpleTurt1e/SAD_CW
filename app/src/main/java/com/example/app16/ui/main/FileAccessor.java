@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap; 
 import java.util.StringTokenizer;
@@ -44,7 +45,13 @@ public class FileAccessor
                { result.add(fileContent); }
                inStrm.close();
            }
-       } catch (Exception _e) { _e.printStackTrace(); }
+       } catch (FileNotFoundException _e) {
+         _e.printStackTrace();
+         return null;
+        }catch (Exception _e){
+         _e.printStackTrace();
+     }
+
      return result;
    }
 

@@ -149,7 +149,6 @@ public class findQuoteFragment extends Fragment implements OnClickListener
                 //Split data
                 String[] tokens = line.split(",");
                 System.out.println(tokens);
-
                 //read data
                 Stock stock = new Stock(tokens[0]);
                 stockList.add(stock);
