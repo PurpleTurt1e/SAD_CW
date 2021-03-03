@@ -117,13 +117,17 @@ public class DailyQuote_DAO
 
     int len = jarray.length();
     for (int i = 0; i < len; i++)
-    { try { JSONObject _x = jarray.getJSONObject(i);
-        if (_x != null)
+    { try {
+//        JSONObject _x = jarray.getJSONObject(i);
+      JSONObject _x = new JSONObject((String) jarray.get(i));
+      if (_x != null)
         { DailyQuote _y = parseJSON(_x); 
           if (_y != null) { res.add(_y); }
         }
       }
-      catch (Exception _e) { }
+      catch (Exception _e) {
+        _e.printStackTrace();
+      return null; }
     }
     return res;
   }
@@ -151,8 +155,8 @@ public class DailyQuote_DAO
     for (int _i = 0; _i < es.size(); _i++)
     { DailyQuote _ex = es.get(_i);
       JSONObject _jx = writeJSON(_ex);
-      if (_jx == null) { } 
-      else 
+      if (_jx == null) { }
+      else
       { try { result.put(_jx); }
         catch (Exception _ee) { }
       }
