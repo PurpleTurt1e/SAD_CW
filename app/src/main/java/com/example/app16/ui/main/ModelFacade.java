@@ -65,7 +65,29 @@ public class ModelFacade
     return result;
   }
 
-  public String findQuote(String date, String dateEnd, String stockTicker)
+  private String validateQuote(String stockTicker, String stockerTicker2, long t1, long t2){
+    String output = "";
+
+    if (t1 >= t2) {
+      output += "Please make the start date earlier than the end date. ";
+    }
+
+    if (t2 > t1 + 731 * 86400) {
+      output += "Please make the end date within 2 years of the start date. ";
+    }
+
+    if(stockTicker.equals("Select Ticker")){
+      output += "Please choose a stock. ";
+    }
+
+    if(stockTicker.equals(stockerTicker2)){
+      output += "Please choose separate stocks. ";
+    }
+    return output;
+  }
+
+
+  public String findQuote(String date, String dateEnd, String stockTicker, String stockTicker2)
   {
     dataStorage = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
     System.out.println("date End of file will be: " + dataStorage.getDateEnd());
@@ -80,7 +102,14 @@ public class ModelFacade
     t1 = DateComponent.getEpochSeconds(date);
     long t2 = 0;
     t2 = DateComponent.getEpochSeconds(dateEnd);
+
+   String validation = validateQuote(stockTicker, stockTicker2, t1, t2);
+   if (!validation.equals("")){
+     return validation;
+   }
+
     String url = "";
+    String url2 = "";
     ArrayList<String> sq1 = null;
     sq1 = Ocl.copySequence(Ocl.initialiseSequence("period1", "period2", "interval", "events"));
     ArrayList<String> sq2 = null;
@@ -89,12 +118,23 @@ public class ModelFacade
     activeNetwork = cm.getActiveNetworkInfo();
     if (activeNetwork != null) {
       url = DailyQuote_DAO.getURL(stockTicker, sq1, sq2);
+      url2 = DailyQuote_DAO.getURL("AMZN", sq1, sq2);
+
       InternetAccessor x = null;
       x = new InternetAccessor();
       x.setDelegate(this);
       x.execute(url);
       System.out.println("has X cancelled the call to the URL?: " + x.isCancelled());
-      result = "Called url: " + url + "\n Data Storage not yet finalised. Please Press \"Analyse\" button on the next tab. ";
+
+      if (true) { //update condition
+        InternetAccessor x2 = null;
+        x2 = new InternetAccessor();
+        x2.setDelegate(this);
+        x2.execute(url2);
+        System.out.println("has X cancelled the call to the URL?: " + x.isCancelled());
+      }
+
+      result = "Called url: " + url + url2 + "\n Data Storage not yet finalised. Please Press \"Analyse\" button on the next tab. ";
     }else{
         if (dataStorage.readFromFile()) {
           result = "Gathered Data from Offline Resource";
@@ -119,7 +159,33 @@ public class ModelFacade
     ArrayList<Double> yvalues = null;
     yvalues = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.close;}));
     result.setXNominal(xnames);
+//    result.setYPoints(yvalues);
+
+    ArrayList<Double> xvals = new ArrayList<>();
+    xvals.add(1.0);
+    xvals.add(2.0);
+    xvals.add(3.0);
+    xvals.add(4.0);
+
+    ArrayList<String> xvals2 = new ArrayList<>();
+    xvals2.add("test");
+    xvals2.add("test 2");
+    xvals2.add("test 3");
+    xvals2.add("test 4");
+
+
+    ArrayList<Double> yvals = new ArrayList<>();
+    yvals.add(70.0);
+    yvals.add(200.0);
+    yvals.add(30.0);
+
+
+    result.setXNominal(xvals2);
     result.setYPoints(yvalues);
+    result.setZPoints(yvals);
+    result.addLine("Test", xvals, yvals);
+
+
     return result;
   }
 }

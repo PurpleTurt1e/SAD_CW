@@ -12,6 +12,7 @@ public class findQuoteBean
   private String date = "";
   private String dateEnd = "";
   private String stockTicker = "";
+  private String stockTicker2 = "";
   private List errors = new ArrayList();
 
   public findQuoteBean(Context _c) { model = ModelFacade.getInstance(_c); }
@@ -22,8 +23,11 @@ public class findQuoteBean
   public void setEndDate(String datex)
   { dateEnd = datex; }
 
-  public void setStockTicker(String stockTickerx)
-  { stockTicker = stockTickerx; }
+  public void setStockTicker(String stockTickerx, String stockTickery)
+  { stockTicker = stockTickerx;
+    stockTicker2 = stockTickery;
+  }
+
 
   public void resetData()
   { date = "";
@@ -39,7 +43,7 @@ public class findQuoteBean
   public String errors() { return errors.toString(); }
 
   public String findQuote()
-  { return model.findQuote(date, dateEnd, stockTicker); }
+  { return model.findQuote(date, dateEnd, stockTicker, stockTicker2); }
 
 }
 

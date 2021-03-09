@@ -56,10 +56,12 @@ public class findQuoteFragment extends Fragment implements OnClickListener
   EditText findQuotedateEndTextField;
   String findQuotedateEndData = "";
   String stockTicker = "";
+  String stockTicker2 = "";
   TextView findQuoteResult;
   Button findQuoteOkButton;
   Button findQuotecancelButton;
   Spinner spinner;
+  Spinner spinner2;
   private List<Stock> stockList = new ArrayList<>();
 
 
@@ -90,6 +92,7 @@ public class findQuoteFragment extends Fragment implements OnClickListener
     findQuotecancelButton = root.findViewById(R.id.findQuoteCancel);
     findQuotecancelButton.setOnClickListener(this);
     spinner = root.findViewById(R.id.stockDropdown);
+    spinner2 = root.findViewById(R.id.stockDropdown2);
 
     readStockData();
 //    System.out.println(stockList.get(0).getStockTicker());
@@ -98,6 +101,7 @@ public class findQuoteFragment extends Fragment implements OnClickListener
     ArrayAdapter<Stock> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, stockList);
     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner.setAdapter(adapter);
+    spinner2.setAdapter(adapter);
     return root;
   }
 
@@ -117,9 +121,10 @@ public class findQuoteFragment extends Fragment implements OnClickListener
     findQuotedateData = findQuotedateTextField.getText() + "";
     findQuotedateEndData = findQuotedateEndTextField.getText() + "";
     stockTicker = spinner.getSelectedItem().toString();
+    stockTicker2 = spinner2.getSelectedItem().toString();
     findquotebean.setdate(findQuotedateData);
     findquotebean.setEndDate(findQuotedateEndData);
-    findquotebean.setStockTicker(stockTicker);
+    findquotebean.setStockTicker(stockTicker, stockTicker2);
     if (findquotebean.isfindQuoteerror())
     { Log.w(getClass().getName(), findquotebean.errors());
       Toast.makeText(myContext, "Errors: " + findquotebean.errors(), Toast.LENGTH_LONG).show();
@@ -133,7 +138,10 @@ public class findQuoteFragment extends Fragment implements OnClickListener
   public void findQuoteCancel(View _v)
   { findquotebean.resetData();
     findQuotedateTextField.setText("");
+    findQuotedateEndTextField.setText("");
     findQuoteResult.setText("");
+    spinner.setSelection(0);
+    spinner2.setSelection(0);
   }
 
     private void readStockData() {
