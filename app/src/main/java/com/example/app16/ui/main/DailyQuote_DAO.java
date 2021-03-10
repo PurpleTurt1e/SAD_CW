@@ -41,8 +41,6 @@ public class DailyQuote_DAO
     return true;
   }
 
-
-
   public static DailyQuote getCachedInstance(String id)
   { return DailyQuote.DailyQuote_index.get(id); }
 
@@ -52,9 +50,7 @@ public class DailyQuote_DAO
   { if (_line == null) { return null; }
     ArrayList<String> _line1vals = Ocl.tokeniseCSV(_line);
     DailyQuote dailyquotex;
-    dailyquotex = DailyQuote.DailyQuote_index.get((String) _line1vals.get(0));
-    if (dailyquotex == null)
-    { dailyquotex = DailyQuote.createByPKDailyQuote((String) _line1vals.get(0)); }
+    dailyquotex = DailyQuote.createByPKDailyQuote((String) _line1vals.get(0));
     dailyquotex.date = (String) _line1vals.get(0);
     dailyquotex.open = Double.parseDouble((String) _line1vals.get(1));
     dailyquotex.high = Double.parseDouble((String) _line1vals.get(2));
@@ -118,7 +114,6 @@ public class DailyQuote_DAO
     int len = jarray.length();
     for (int i = 0; i < len; i++)
     { try {
-//        JSONObject _x = jarray.getJSONObject(i);
       JSONObject _x = new JSONObject((String) jarray.get(i));
       if (_x != null)
         { DailyQuote _y = parseJSON(_x); 

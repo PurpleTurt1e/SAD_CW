@@ -35,6 +35,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import android.view.View;
 import android.util.Log;
 import android.widget.Spinner;
@@ -111,13 +114,22 @@ public class findQuoteFragment extends Fragment implements OnClickListener
   { InputMethodManager _imm = (InputMethodManager) myContext.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
     try { _imm.hideSoftInputFromWindow(_v.getWindowToken(), 0); } catch (Exception _e) { }
     if (_v.getId() == R.id.findQuoteOK)
-    { findQuoteOK(_v); }
+    {
+        try {
+            findQuoteOK(_v);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+    }
     else if (_v.getId() == R.id.findQuoteCancel)
     { findQuoteCancel(_v); }
   }
 
-  public void findQuoteOK(View _v) 
-  { 
+  public void findQuoteOK(View _v) throws ExecutionException, InterruptedException, TimeoutException {
     findQuotedateData = findQuotedateTextField.getText() + "";
     findQuotedateEndData = findQuotedateEndTextField.getText() + "";
     stockTicker = spinner.getSelectedItem().toString();
@@ -156,7 +168,6 @@ public class findQuoteFragment extends Fragment implements OnClickListener
             while ((line = reader.readLine()) != null) {
                 //Split data
                 String[] tokens = line.split(",");
-                System.out.println(tokens);
                 //read data
                 Stock stock = new Stock(tokens[0]);
                 stockList.add(stock);

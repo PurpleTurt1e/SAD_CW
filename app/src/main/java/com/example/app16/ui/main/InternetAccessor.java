@@ -11,11 +11,11 @@ import java.net.URL;
 import android.content.Context;
 
 public class InternetAccessor extends AsyncTask<String, Void, String>
-{  private InternetCallback delegate = null;
-   private static InternetAccessor instance = null;
+{   private InternetCallback delegate = null;
+    private static InternetAccessor instance = null;
 
-   public void setDelegate(InternetCallback c)
-   { delegate = c; }
+    public void setDelegate(InternetCallback c)
+    { delegate = c; }
 
    public static InternetAccessor getInstance()
    { if (instance == null) 
@@ -28,13 +28,27 @@ public class InternetAccessor extends AsyncTask<String, Void, String>
    @Override
    protected String doInBackground(String... params)
    { String url = params[0];
+     String url2 = params.length == 1 ? "" : params[1];
      String myData = "";
-     try { myData = fetchUrl(url); }
+     String myData2 = "";
+     String finalResult ="";
+       try {
+           myData = fetchUrl(url);
+           if(!url2.equals("")) {
+               myData2 = fetchUrl(url2);
+           }
+     }
      catch (Exception _e)
      { delegate.internetAccessCompleted(null);
        return null;
      }
-     return myData;
+       if(!myData2.equals("")){
+           myData2 = myData2.substring(myData2.indexOf('\n')+1);
+           finalResult = myData+myData2;
+       }else {
+           finalResult = myData;
+       }
+       return finalResult;
    }
 
    private String fetchUrl(String url)
@@ -65,9 +79,7 @@ public class InternetAccessor extends AsyncTask<String, Void, String>
   }
 
   @Override
-  protected void onPostExecute(String result) {
-      delegate.internetAccessCompleted(result);
-  }
+  protected void onPostExecute(String result) { delegate.internetAccessCompleted(result); }
 
   @Override
   protected void onProgressUpdate(Void... values) {}

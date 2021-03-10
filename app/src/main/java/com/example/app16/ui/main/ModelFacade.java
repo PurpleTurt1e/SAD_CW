@@ -3,6 +3,7 @@ package com.example.app16.ui.main;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 
 
 import org.json.JSONArray;
@@ -10,9 +11,16 @@ import org.json.JSONException;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ModelFacade
   implements InternetCallback
@@ -30,8 +38,8 @@ public class ModelFacade
   }
 
   private ModelFacade(Context context)
-  { myContext = context; 
-    fileSystem = new FileAccessor(context); 
+  { myContext = context;
+    fileSystem = new FileAccessor(context);
   }
 
   public void internetAccessCompleted(String response) {
@@ -87,17 +95,18 @@ public class ModelFacade
   }
 
 
-  public String findQuote(String date, String dateEnd, String stockTicker, String stockTicker2)
-  {
-    dataStorage = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
+  public String findQuote(String date, String dateEnd, String stockTicker, String stockTicker2) throws ExecutionException, InterruptedException, TimeoutException {
+      DailyQuote.refreshDB();
+      DailyQuote.stockTicker1 = stockTicker;
+      dataStorage = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
     System.out.println("date End of file will be: " + dataStorage.getDateEnd());
     String result = "";
-    if (DailyQuote_DAO.isCached(date))
-    {
-      result = "Data already exists";
-      return result;
-    }
-    else { }
+//    if (DailyQuote_DAO.isCached(date))
+//    {
+//      result = "Data already exists";
+//      return result;
+//    }
+//    else { }
     long t1 = 0;
     t1 = DateComponent.getEpochSeconds(date);
     long t2 = 0;
@@ -118,20 +127,18 @@ public class ModelFacade
     activeNetwork = cm.getActiveNetworkInfo();
     if (activeNetwork != null) {
       url = DailyQuote_DAO.getURL(stockTicker, sq1, sq2);
-      url2 = DailyQuote_DAO.getURL("AMZN", sq1, sq2);
+      url2 = DailyQuote_DAO.getURL(stockTicker2, sq1, sq2);
 
       InternetAccessor x = null;
       x = new InternetAccessor();
       x.setDelegate(this);
-      x.execute(url);
       System.out.println("has X cancelled the call to the URL?: " + x.isCancelled());
 
-      if (true) { //update condition
-        InternetAccessor x2 = null;
-        x2 = new InternetAccessor();
-        x2.setDelegate(this);
-        x2.execute(url2);
-        System.out.println("has X cancelled the call to the URL?: " + x.isCancelled());
+      if (!stockTicker2.equals("Select Ticker")) { //update condition
+          DailyQuote.stockTicker2 = stockTicker2;
+          x.execute(url, url2);
+      }else{
+          x.execute(url);
       }
 
       result = "Called url: " + url + url2 + "\n Data Storage not yet finalised. Please Press \"Analyse\" button on the next tab. ";
@@ -147,45 +154,45 @@ public class ModelFacade
 
   public GraphDisplay analyse()
   {
-    GraphDisplay result = null;
-    result = new GraphDisplay();
-    ArrayList<DailyQuote> quotes = null;
-    quotes = Ocl.copySequence(DailyQuote.DailyQuote_allInstances);
-    if (activeNetwork != null) {
-      dataStorage.writeIntoFile();
-    }
-    ArrayList<String> xnames = null;
-    xnames = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.date;}));
-    ArrayList<Double> yvalues = null;
-    yvalues = Ocl.copySequence(Ocl.collectSequence(quotes,(q)->{return q.close;}));
-    result.setXNominal(xnames);
-//    result.setYPoints(yvalues);
+      GraphDisplay result = null;
+      result = new GraphDisplay();
+      Legend legend = new Legend();
+      Map<String, ArrayList<DailyQuote>> allQuotes = DailyQuote.getAllInstancesFinal();
+      allQuotes.forEach((key, value)->{
+        List<String> xVals = new ArrayList<>();
+        List<Double> yVals = new ArrayList<>();
 
-    ArrayList<Double> xvals = new ArrayList<>();
-    xvals.add(1.0);
-    xvals.add(2.0);
-    xvals.add(3.0);
-    xvals.add(4.0);
+        value.forEach((DailyQuote)->{
+          xVals.add(DailyQuote.date);
+          yVals.add(DailyQuote.close);
+        });
+          Series series = new Series(key);
+          series.setAxisData(xVals,yVals);
+          legend.addSeries(series);
+      });
+      ArrayList<String> Xvals = new ArrayList<>();
+      ArrayList<Double> Yvals = new ArrayList<>();
+      ArrayList<Double> Zvals = new ArrayList<>();
 
-    ArrayList<String> xvals2 = new ArrayList<>();
-    xvals2.add("test");
-    xvals2.add("test 2");
-    xvals2.add("test 3");
-    xvals2.add("test 4");
-
-
-    ArrayList<Double> yvals = new ArrayList<>();
-    yvals.add(70.0);
-    yvals.add(200.0);
-    yvals.add(30.0);
-
-
-    result.setXNominal(xvals2);
-    result.setYPoints(yvalues);
-    result.setZPoints(yvals);
-    result.addLine("Test", xvals, yvals);
-
-
+      List<Map.Entry<String, List<LegendMapValue>>> XYmap = legend.getLegend();
+      XYmap.forEach((q)->{
+        if (allQuotes.keySet().size() == 1){
+          Xvals.add(q.getKey());
+          Yvals.add(q.getValue().get(0).getSeriesValue());
+        }else if(q.getValue().size() == 2){
+            Xvals.add(q.getKey());
+            Yvals.add(q.getValue().get(0).getSeriesValue());
+            Zvals.add(q.getValue().get(1).getSeriesValue());
+        }
+      });
+      if (allQuotes.keySet().size() == 2){
+          result.setZPoints(Zvals);
+      }
+      result.setXNominal(Xvals);
+      result.setYPoints(Yvals);
+  //    if (activeNetwork != null) {
+  //      dataStorage.writeIntoFile();
+  //    }
     return result;
   }
 }

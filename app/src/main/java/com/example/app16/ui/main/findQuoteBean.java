@@ -3,6 +3,8 @@ package com.example.app16.ui.main;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import android.content.Context;
 
@@ -42,8 +44,7 @@ public class findQuoteBean
 
   public String errors() { return errors.toString(); }
 
-  public String findQuote()
-  { return model.findQuote(date, dateEnd, stockTicker, stockTicker2); }
+  public String findQuote() throws ExecutionException, InterruptedException, TimeoutException { return model.findQuote(date, dateEnd, stockTicker, stockTicker2); }
 
 }
 

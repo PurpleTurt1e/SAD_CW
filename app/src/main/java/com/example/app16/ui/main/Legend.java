@@ -15,7 +15,7 @@ public class Legend {
     private Map<String, List<LegendMapValue>> XYMap;
     private Double miny;
     private Double maxy;
-    private int seriesID = 0; //TODO REPLACE THIS WITH THE SERIES NAME
+//    private int seriesID = 0; //TODO REPLACE THIS WITH THE SERIES NAME
 
     public Legend() {
         this.XYMap = new TreeMap<String, List<LegendMapValue>>(
@@ -43,19 +43,19 @@ public class Legend {
 
 
     public void addSeries(Series series) {
-        seriesID++; // TODO REPLACE THIS WITH THE SERIES NAME
+//        seriesID++; // TODO REPLACE THIS WITH THE SERIES NAME
         recalculateMinMax(series);
         for (String xName : series.getXnames()) {
             List<LegendMapValue> entry = XYMap.get(xName);
             if (entry == null) {
                 List<LegendMapValue> legendMapValueList = new ArrayList<>();
-                legendMapValueList.add(new LegendMapValue(""+seriesID, series.getYValue(xName)));
+                legendMapValueList.add(new LegendMapValue(series.getTicker(), series.getYValue(xName)));
                 XYMap.put(xName, legendMapValueList);
             } else {
                 List<LegendMapValue> legendMapValueList = XYMap.get(xName);
                 Double newSeriesYValue = series.getYValue(xName);
                 if (newSeriesYValue != null) {
-                    legendMapValueList.add(new LegendMapValue(""+seriesID, newSeriesYValue));
+                    legendMapValueList.add(new LegendMapValue(series.getTicker(), newSeriesYValue));
                 }
             }
         }

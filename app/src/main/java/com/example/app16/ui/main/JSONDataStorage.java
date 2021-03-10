@@ -57,7 +57,6 @@ public class JSONDataStorage {
         }
     }
 
-
     public String getDate() {
         return date;
     }
