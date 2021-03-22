@@ -25,7 +25,8 @@ import java.util.concurrent.TimeoutException;
 public class ModelFacade
   implements InternetCallback
 {
-  JSONDataStorage dataStorage;
+  JSONDataStorage dataStorage1;
+  JSONDataStorage dataStorage2;
   NetworkInfo activeNetwork;
   FileAccessor fileSystem;
   Context myContext;
@@ -98,8 +99,8 @@ public class ModelFacade
   public String findQuote(String date, String dateEnd, String stockTicker, String stockTicker2) throws ExecutionException, InterruptedException, TimeoutException {
       DailyQuote.refreshDB();
       DailyQuote.stockTicker1 = stockTicker;
-      dataStorage = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
-    System.out.println("date End of file will be: " + dataStorage.getDateEnd());
+      dataStorage1 = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
+
     String result = "";
 //    if (DailyQuote_DAO.isCached(date))
 //    {
@@ -132,10 +133,10 @@ public class ModelFacade
       InternetAccessor x = null;
       x = new InternetAccessor();
       x.setDelegate(this);
-      System.out.println("has X cancelled the call to the URL?: " + x.isCancelled());
 
       if (!stockTicker2.equals("Select Ticker")) { //update condition
           DailyQuote.stockTicker2 = stockTicker2;
+          dataStorage2 = new JSONDataStorage(stockTicker2, date, dateEnd, fileSystem);
           x.execute(url, url2);
       }else{
           x.execute(url);
@@ -143,7 +144,7 @@ public class ModelFacade
 
       result = "Called url: " + url + url2 + "\n Data Storage not yet finalised. Please Press \"Analyse\" button on the next tab. ";
     }else{
-        if (dataStorage.readFromFile()) {
+        if (dataStorage1.readFromFile() && dataStorage2.readFromFile()) {
           result = "Gathered Data from Offline Resource";
         }else{
           result = "You are offline, please connect Online to retrieve data";
@@ -157,7 +158,20 @@ public class ModelFacade
       GraphDisplay result = null;
       result = new GraphDisplay();
       Legend legend = new Legend();
-      Map<String, ArrayList<DailyQuote>> allQuotes = DailyQuote.getAllInstancesFinal();
+      Map<String, ArrayList<DailyQuote>> allQuotes = DailyQuote.getAllInstances();
+//      System.out.println("These are all the quotes for "+ dataStorage1.getName() +": "  + allQuotes.get(dataStorage1.getName()));
+//      System.out.println("These are all the quotes for "+ dataStorage2.getName() +": "  + allQuotes.get(dataStorage2.getName()));
+      dataStorage1.setQuotes(allQuotes.get(dataStorage1.getName()));
+      dataStorage2.setQuotes(allQuotes.get(dataStorage2.getName()));
+//      System.out.println(allQuotes);
+      if (activeNetwork != null) {
+          if (dataStorage1 != null){
+              dataStorage1.writeIntoFile();
+          }
+          if(dataStorage2 != null){
+              dataStorage2.writeIntoFile();
+          }
+      }
       allQuotes.forEach((key, value)->{
         List<String> xVals = new ArrayList<>();
         List<Double> yVals = new ArrayList<>();
@@ -190,9 +204,6 @@ public class ModelFacade
       }
       result.setXNominal(Xvals);
       result.setYPoints(Yvals);
-  //    if (activeNetwork != null) {
-  //      dataStorage.writeIntoFile();
-  //    }
     return result;
   }
 }

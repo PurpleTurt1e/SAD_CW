@@ -50,7 +50,7 @@ class DailyQuote { static ArrayList<DailyQuote> DailyQuote_allInstances = new Ar
     return finalInstances;
   }
 
-  private static boolean isDateLessThan(String o1, String o2) {
+  public static boolean isDateLessThan(String o1, String o2) {
     String pattern = "yyyy-MM-dd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     Date o1Date = null;

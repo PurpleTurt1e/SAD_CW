@@ -68,9 +68,8 @@ public class DailyQuote_DAO
 
     try {
       String date = obj.getString("date");
-      DailyQuote _dailyquotex = DailyQuote.DailyQuote_index.get(date);
-      if (_dailyquotex == null) { _dailyquotex = DailyQuote.createByPKDailyQuote(date); }
-      
+      DailyQuote _dailyquotex ;
+      _dailyquotex = DailyQuote.createByPKDailyQuote(date);
       _dailyquotex.date = obj.getString("date");
       _dailyquotex.open = obj.getDouble("open");
       _dailyquotex.high = obj.getDouble("high");
