@@ -15,7 +15,6 @@ public class Legend {
     private Map<String, List<LegendMapValue>> XYMap;
     private Double miny;
     private Double maxy;
-//    private int seriesID = 0; //TODO REPLACE THIS WITH THE SERIES NAME
 
     public Legend() {
         this.XYMap = new TreeMap<String, List<LegendMapValue>>(
@@ -43,7 +42,6 @@ public class Legend {
 
 
     public void addSeries(Series series) {
-//        seriesID++; // TODO REPLACE THIS WITH THE SERIES NAME
         recalculateMinMax(series);
         for (String xName : series.getXnames()) {
             List<LegendMapValue> entry = XYMap.get(xName);
