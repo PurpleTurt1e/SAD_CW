@@ -104,6 +104,9 @@ public class analyseFragment extends Fragment implements OnClickListener
 
 
   public void analyseCancel(View _v)
-  { analysebean.resetData();
+  {
+      analyseResult.invalidate();
+      analyseResult.refreshDrawableState();
+      analyseResult.setImageDrawable(null);
   }
 }

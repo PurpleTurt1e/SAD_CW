@@ -172,11 +172,10 @@ public class ModelFacade
       result = new GraphDisplay();
       Legend legend = new Legend();
       Map<String, ArrayList<DailyQuote>> allQuotes = DailyQuote.getAllInstances();
-//      System.out.println("These are all the quotes for "+ dataStorage1.getName() +": "  + allQuotes.get(dataStorage1.getName()));
-//      System.out.println("These are all the quotes for "+ dataStorage2.getName() +": "  + allQuotes.get(dataStorage2.getName()));
       dataStorage1.setQuotes(allQuotes.get(dataStorage1.getName()));
-      dataStorage2.setQuotes(allQuotes.get(dataStorage2.getName()));
-//      System.out.println(allQuotes);
+      if(allQuotes.size() > 1){
+          dataStorage2.setQuotes(allQuotes.get(dataStorage2.getName()));
+      }
       if (activeNetwork != null) {
           if (dataStorage1 != null){
               dataStorage1.writeIntoFile();

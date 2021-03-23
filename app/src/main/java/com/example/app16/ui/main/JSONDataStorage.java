@@ -22,7 +22,6 @@ public class JSONDataStorage {
 
     //Test this
     public boolean writeIntoFile(){
-//        System.out.println(quotes.get(1));
         if (quotes.isEmpty()){
             return false;
         }
@@ -61,19 +60,12 @@ public class JSONDataStorage {
                         finalArray.addAll(getStringQuotes(quotesPlaceholderBefore));
                         finalArray.addAll(getStringQuotes(fileRead));
                         finalArray.addAll(getStringQuotes(quotesPlaceholderAfter));
-//                        System.out.println(this.name);
-//                        System.out.println(quotesPlaceholderBefore);
-//                        System.out.println(fileRead);
-//                        System.out.println(quotesPlaceholderAfter);
-//                        System.out.println("Final Built Array" + finalArray);
                         fileSystem.writeFile(name, finalArray);
-                        System.out.println(fileSystem.readFile(name));
                         return true;
                     }
         }else{
             ArrayList<DailyQuote> allQuotes = quotes;
             ArrayList<String> allStringQuotes = getStringQuotes(allQuotes);
-//            System.out.println(allStringQuotes);
             if (allStringQuotes != null){
                 fileSystem.writeFile(name, allStringQuotes);
                 return true;
@@ -98,14 +90,11 @@ public class JSONDataStorage {
     public boolean readFromFile(){
         try {
             ArrayList<String> file = fileSystem.readFile(name);
-            System.out.println("File Read for "+ name+": " + file);
             if (file == null){
                 return false;
             }
             JSONArray JsonArrayFile = new JSONArray(file);
-//            System.out.println(JsonArrayFile);
             ArrayList<DailyQuote> status = DailyQuote_DAO.parseJSON(JsonArrayFile);
-//            System.out.println(status);
             if (status != null) {
                 return true;
             }

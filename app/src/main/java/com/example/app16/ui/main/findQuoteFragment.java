@@ -98,9 +98,6 @@ public class findQuoteFragment extends Fragment implements OnClickListener
     spinner2 = root.findViewById(R.id.stockDropdown2);
 
     readStockData();
-//    System.out.println(stockList.get(0).getStockTicker());
-//      Stock stock1 = new Stock("GME", "GameStop");
-//      stockList.add(stock1);
     ArrayAdapter<Stock> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, stockList);
     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner.setAdapter(adapter);
