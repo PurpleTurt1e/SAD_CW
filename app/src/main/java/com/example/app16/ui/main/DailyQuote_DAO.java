@@ -1,5 +1,6 @@
 package com.example.app16.ui.main;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.HashMap;
 import java.util.Collection;
@@ -18,7 +19,10 @@ import org.json.JSONObject;
 import org.json.*;
 
 public class DailyQuote_DAO
-{ public static String getURL(String command, ArrayList<String> pars, ArrayList<String> values)
+{
+  public static String date = "";
+  public static String dateEnd = "";
+  public static String getURL(String command, ArrayList<String> pars, ArrayList<String> values)
   { String res = "https://query1.finance.yahoo.com/v7/finance/download/";
     if (command != null)
     { res = res + command; }
@@ -93,13 +97,16 @@ public class DailyQuote_DAO
 
     for (int i = 1; i < rows.size(); i++)
     { String row = rows.get(i);
-      if (row == null || row.trim().length() == 0)
-      { }
-      else
-      { DailyQuote _x = parseCSV(row);
-        if (_x != null)
-        { result.add(_x); }
-      }
+
+        if (row == null || row.trim().length() == 0) {
+        } else {
+          if(isDateWithinBounds(Ocl.tokeniseCSV(row).get(0))) {
+            DailyQuote _x = parseCSV(row);
+            if (_x != null) {
+              result.add(_x);
+            }
+          }
+        }
     }
     return result;
   }
@@ -111,17 +118,21 @@ public class DailyQuote_DAO
     ArrayList<DailyQuote> res = new ArrayList<DailyQuote>();
 
     int len = jarray.length();
-    for (int i = 0; i < len; i++)
-    { try {
-      JSONObject _x = new JSONObject((String) jarray.get(i));
-      if (_x != null)
-        { DailyQuote _y = parseJSON(_x); 
-          if (_y != null) { res.add(_y); }
+    for (int i = 0; i < len; i++) {
+      try {
+        JSONObject _x = new JSONObject((String) jarray.get(i));
+        if(isDateWithinBounds(_x.getString("date"))){
+          if (_x != null) {
+            DailyQuote _y = parseJSON(_x);
+            if (_y != null) {
+              res.add(_y);
+            }
+          }
         }
-      }
-      catch (Exception _e) {
+      } catch (Exception _e) {
         _e.printStackTrace();
-      return null; }
+        return null;
+      }
     }
     return res;
   }
@@ -158,5 +169,20 @@ public class DailyQuote_DAO
     return result;
   }
 
+  private static boolean isDateWithinBounds(String o1) {
+    String pattern = "yyyy-MM-dd";
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+    Date o1Date = null;
+    Date startDate = null;
+    Date endDate = null;
+    try {
+      o1Date = simpleDateFormat.parse(o1);
+      startDate = simpleDateFormat.parse(date);
+      endDate = simpleDateFormat.parse(dateEnd);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return (o1Date.compareTo(startDate) >= 0 && o1Date.compareTo(endDate) <= 0);
+  }
 
 }

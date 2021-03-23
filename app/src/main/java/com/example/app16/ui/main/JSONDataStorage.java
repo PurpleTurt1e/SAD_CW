@@ -22,7 +22,7 @@ public class JSONDataStorage {
 
     //Test this
     public boolean writeIntoFile(){
-        System.out.println(quotes.get(1));
+//        System.out.println(quotes.get(1));
         if (quotes.isEmpty()){
             return false;
         }
@@ -67,6 +67,7 @@ public class JSONDataStorage {
 //                        System.out.println(quotesPlaceholderAfter);
 //                        System.out.println("Final Built Array" + finalArray);
                         fileSystem.writeFile(name, finalArray);
+                        System.out.println(fileSystem.readFile(name));
                         return true;
                     }
         }else{
@@ -97,7 +98,7 @@ public class JSONDataStorage {
     public boolean readFromFile(){
         try {
             ArrayList<String> file = fileSystem.readFile(name);
-//            System.out.println(file);
+            System.out.println("File Read for "+ name+": " + file);
             if (file == null){
                 return false;
             }

@@ -97,6 +97,8 @@ public class ModelFacade
 
 
   public String findQuote(String date, String dateEnd, String stockTicker, String stockTicker2) throws ExecutionException, InterruptedException, TimeoutException {
+      DailyQuote_DAO.date = date;
+      DailyQuote_DAO.dateEnd = dateEnd;
       DailyQuote.refreshDB();
       DailyQuote.stockTicker1 = stockTicker;
       dataStorage1 = new JSONDataStorage(stockTicker, date, dateEnd, fileSystem);
@@ -144,11 +146,22 @@ public class ModelFacade
 
       result = "Called url: " + url + url2 + "\n Data Storage not yet finalised. Please Press \"Analyse\" button on the next tab. ";
     }else{
-        if (dataStorage1.readFromFile() && dataStorage2.readFromFile()) {
-          result = "Gathered Data from Offline Resource";
+        if (!stockTicker2.equals("Select Ticker")) { //update condition
+            DailyQuote.stockTicker2 = stockTicker2;
+            dataStorage2 = new JSONDataStorage(stockTicker2, date, dateEnd, fileSystem);
+            if (dataStorage1.readFromFile() && dataStorage2.readFromFile()) {
+                result = "Gathered Data from Offline Resource";
+            }else{
+                result = "You are offline, please connect Online to retrieve data";
+            }
         }else{
-          result = "You are offline, please connect Online to retrieve data";
+            if (dataStorage1.readFromFile()) {
+                result = "Gathered Data from Offline Resource";
+            }else{
+                result = "You are offline, please connect Online to retrieve data";
+            }
         }
+
     }
     return result;
   }
